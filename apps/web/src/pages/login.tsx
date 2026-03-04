@@ -1,5 +1,5 @@
-import { Input, Stack, Card, Button, Paper } from "@mui/material";
-import { useCallback } from "react";
+import { Input, Stack, Card, Button, Paper, Snackbar, Alert } from "@mui/material";
+import { useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../utils/ChatContext";
@@ -7,17 +7,18 @@ import { useSocket } from "../utils/ChatContext";
 
 export default function LoginPage() {
     const { username, setUsername, socketRef } = useSocket();
+    const [error, setError] = useState<string>("");
     const navigate = useNavigate();
 
     const handleLogin = useCallback(async () => {
         const response = await fetch('http://localhost:3000/users');
         if (!response.ok) {
-            alert("Login failure, please try again");
+            setError("Login failure, please try again");
             return;
         }
         const data = await response.json();
         if (data.users.length > 0 && data.users.includes(username)) {
-            alert("Username already taken")
+            setError("Username already taken")
             return;
         }
         socketRef.current = io('http://localhost:3000');
@@ -60,6 +61,21 @@ export default function LoginPage() {
                     </Button>
                 </Stack>
             </Card>
+            <Snackbar
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                open={error.length > 0}
+                onClose={() => setError("")}
+                key={error}
+                autoHideDuration={3000}
+            >
+                <Alert onClose={() => setError("")}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: "100%" }}
+                >
+                    {error}
+                </Alert>
+            </Snackbar>
         </Paper>
     )
 }

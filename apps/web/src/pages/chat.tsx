@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuid } from 'uuid';
 import { useSocket } from "../utils/ChatContext";
-import { Box} from "@mui/material";
+import { Alert, Box, Snackbar } from "@mui/material";
 import { MessageWindow } from "../ui/message-window";
 import { Header } from "../ui/header";
 import { MessageInput } from "../ui/message-input";
@@ -40,6 +40,7 @@ function stringToColor(string: string) {
 export default function ChatPage() {
     const navigate = useNavigate();
     const { username, setUsername, socketRef } = useSocket();
+    const [error, setError] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [rooms, setRooms] = useState<string[]>([]);
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
@@ -78,10 +79,15 @@ export default function ChatPage() {
             setRooms(roomList);
         });
 
+        socketRef.current?.on('error', ({ message }) => {
+            setError(message);
+        });
+
         return () => {
             socketRef.current?.off('message:new');
             socketRef.current?.off('typing:update');
             socketRef.current?.off('room:list');
+            socketRef.current?.off('error');
         };
     }, []);
 
@@ -136,6 +142,21 @@ export default function ChatPage() {
                     />
                 </Box>
             </Box>
+           <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={error.length > 0}
+            onClose={() => setError("")}
+            key={error}
+            autoHideDuration={3000}
+        >
+            <Alert onClose={() => setError("")}
+                severity="error"
+                variant="filled"
+                sx={{ width: "100%" }}
+            >
+                {error}
+            </Alert>
+        </Snackbar>
         </Box>
     )
 }

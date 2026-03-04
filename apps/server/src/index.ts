@@ -2,12 +2,21 @@ import express from 'express';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { v4 as uuid } from 'uuid';
+import sanitizeHtml from 'sanitize-html';
+import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 
 const CLIENT_URL = 'http://localhost:5173';
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests, please try again later'
+});
+
 const app = express();
 app.use(cors({ origin: CLIENT_URL }));
+app.use(limiter)
 const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: CLIENT_URL }
@@ -15,6 +24,17 @@ const io = new Server(server, {
 
 const userNames = new Map();
 const roomUsers = new Map<string, Set<string>>();
+const messageTimestamps = new Map<string, number[]>();
+
+function isRateLimited(socketId: string, limit: number, windowMs: number): boolean {
+    const now = Date.now();
+    const timestamps = messageTimestamps.get(socketId) ?? [];
+    const recent = timestamps.filter(t => now - t < windowMs);
+    messageTimestamps.set(socketId, recent);
+    if (recent.length >= limit) return true;
+    messageTimestamps.set(socketId, [...recent, now]);
+    return false;
+}
 
 app.get('/users', (req, res) => {
     const names = [...userNames.values()];
@@ -44,6 +64,8 @@ io.on("connection", (socket) => {
     });
     socket.on("room:create", (data) => {
         if (!data?.room) return;
+        const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
+        if (!clean.trim()) return;
         const room = data.room;
         roomUsers.set(room, new Set([id]));
         socket.join(data.room)
@@ -80,10 +102,13 @@ io.on("connection", (socket) => {
         }
     });
     socket.on('user:join', (data) => {
+        const clean = sanitizeHtml(data.userName, { allowedTags: [], allowedAttributes: {} });
+        if (!clean.trim()) return;
         userNames.set(id, data.userName);
     });
     socket.on("disconnect", () => {
         userNames.delete(id);
+        messageTimestamps.delete(id);
     });
     socket.on('typing:start', (data) => {
         if (!data?.room) return;
@@ -98,7 +123,13 @@ io.on("connection", (socket) => {
         socket.broadcast.to(data.room).emit('typing:update', { username: user, isTyping: false });
     });
     socket.on("message:send", (data) => {
-        if (!data?.room) return;
+        if (!data?.room || !data.message) return;
+        if (isRateLimited(id, 10, 5000)) {
+            socket.emit('error', { message: 'You are sending messages too fast' });
+            return;
+        }
+        const clean = sanitizeHtml(data.message, { allowedTags: [], allowedAttributes: {} });
+        if (!clean.trim()) return;
         const user = userNames.get(id);
         io.to(data.room).emit('message:new', {
             id: data.id,

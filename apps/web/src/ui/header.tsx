@@ -1,5 +1,4 @@
-import { Box, Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { useState } from "react";
+import { Box, Button } from "@mui/material";
 
 interface HeaderProps {
     logOut: () => void;
