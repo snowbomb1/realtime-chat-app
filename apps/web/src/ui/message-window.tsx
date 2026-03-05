@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, Typography } from "@mui/material";
+import { Avatar, Box, Card, Stack, Typography } from "@mui/material";
 import type { Message } from "./types";
 import { useEffect, useRef } from "react";
 
@@ -34,9 +34,25 @@ export const MessageWindow = ({ typingUsers, messages, username }: MessageWindow
                                 flexDirection: isOwnMessage ? "row-reverse" : "row" 
                             }}>
                                 <Avatar sx={{mt: 1, backgroundColor: message.avatarColor }}>{message.username.slice(0, 1)}</Avatar>
-                                <Card sx={{ padding: 1, marginBottom: 5, width: "400px" }}>
-                                    <h4 style={{ display: "flex", flexDirection: "row", gap: 6, alignItems: 'center'}}>{message.username} - {message.timestamp}</h4>
-                                    <p>{message.message}</p>
+                                <Card sx={{ padding: 1, marginBottom: 2, width: "300px" }}>
+                                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                                        <Box sx={{ 
+                                            display: "flex", 
+                                            flexDirection: "column", 
+                                            alignItems: isOwnMessage ? "flex-end" : "flex-start",
+                                            mb: 1
+                                        }}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {message.username}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {message.timestamp}
+                                            </Typography>
+                                        </Box>
+                                        <Typography variant="body1">
+                                            {message.message}
+                                        </Typography>
+                                    </Box>
                                 </Card>
                             </Box>
                         ) : (

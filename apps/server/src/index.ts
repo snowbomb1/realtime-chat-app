@@ -59,9 +59,9 @@ app.get('/users/:roomId', (req, res) => {
 
 io.on("connection", (socket) => {
     const id = socket.id;
-    socket.onAny((event, data) => {
-        console.log('incoming event:', event, data);
-    });
+    // socket.onAny((event, data) => {
+    //     console.log('incoming event:', event, data);
+    // });
     socket.on("room:create", (data) => {
         if (!data?.room) return;
         const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
