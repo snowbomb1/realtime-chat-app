@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/login'
 import ChatPage from './pages/chat'
-import { SocketProvider } from './utils/ChatContext'
+import { SocketProvider } from './utils/SocketContext'
 import ProtectedRoute from './utils/ProtectedRoute'
+import { ChatProvider } from './utils/ChatContext'
 
 function App() {
 
@@ -13,7 +14,9 @@ function App() {
           <Route path='/' element={<LoginPage />} />
           <Route path='/chat' element={
             <ProtectedRoute>
-              <ChatPage />
+              <ChatProvider>
+                <ChatPage />
+              </ChatProvider>
             </ProtectedRoute>
             } />
         </Routes>

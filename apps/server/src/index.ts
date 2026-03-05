@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { v4 as uuid } from 'uuid';
 import sanitizeHtml from 'sanitize-html';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import cors from 'cors';
 
 const CLIENT_URL = 'http://localhost:5173';
@@ -16,7 +17,8 @@ const limiter = rateLimit({
 
 const app = express();
 app.use(cors({ origin: CLIENT_URL }));
-app.use(limiter)
+app.use(limiter);
+app.use(helmet());
 const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: CLIENT_URL }
@@ -59,9 +61,10 @@ app.get('/users/:roomId', (req, res) => {
 
 io.on("connection", (socket) => {
     const id = socket.id;
-    // socket.onAny((event, data) => {
-    //     console.log('incoming event:', event, data);
-    // });
+    socket.onAny((event, data) => {
+        console.log('incoming event:', event, data);
+    });
+    socket.emit('room:list', [...roomUsers.keys()])
     socket.on("room:create", (data) => {
         if (!data?.room) return;
         const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
@@ -75,6 +78,7 @@ io.on("connection", (socket) => {
         if (!data?.room) return;
         const user = userNames.get(id)
         roomUsers.get(data.room)?.add(id)
+        io.to(data.room).emit("room:users", { userList: roomUsers.get(data.room) })
         io.to(data.room).emit('message:new', {
             id: uuid(),
             username: 'system',
@@ -87,7 +91,8 @@ io.on("connection", (socket) => {
     socket.on("room:leave", (data) => {
         if (!data?.room) return;
         const user = userNames.get(id);
-        roomUsers.get(data.room)?.delete(id)
+        roomUsers.get(data.room)?.delete(id);
+        socket.leave(data.room);
         if (roomUsers.get(data.room)?.size === 0) {
             roomUsers.delete(data.room);
             io.emit('room:list', [...roomUsers.keys()]);

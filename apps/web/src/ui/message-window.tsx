@@ -1,14 +1,11 @@
 import { Avatar, Box, Card, Typography } from "@mui/material";
-import type { Message } from "./types";
 import { useEffect, useRef } from "react";
+import { useChat } from "../utils/ChatContext";
+import { useSocket } from "../utils/SocketContext";
 
-interface MessageWindowProps {
-    username: string;
-    typingUsers: string[];
-    messages: Message[]
-}
-
-export const MessageWindow = ({ typingUsers, messages, username }: MessageWindowProps) => {
+export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
+    const { username } = useSocket();
+    const { typingUsers, messages } = useChat();
     const feedRef = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
@@ -34,7 +31,7 @@ export const MessageWindow = ({ typingUsers, messages, username }: MessageWindow
                                 flexDirection: isOwnMessage ? "row-reverse" : "row" 
                             }}>
                                 <Avatar sx={{mt: 1, backgroundColor: message.avatarColor }}>{message.username.slice(0, 1)}</Avatar>
-                                <Card sx={{ p: 1, marginBottom: 2, width: "300px" }}>
+                                <Card sx={{ p: 1, marginBottom: 2, width: isMobile ? 200 : 300 }}>
                                     <Box sx={{ display: "flex", flexDirection: "column" }}>
                                         <Box sx={{ 
                                             display: "flex", 

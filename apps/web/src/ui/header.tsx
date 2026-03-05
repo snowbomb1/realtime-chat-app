@@ -1,10 +1,8 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import { useChat } from "../utils/ChatContext";
 
-interface HeaderProps {
-    logOut: () => void;
-}
-
-export const Header = ({ logOut }: HeaderProps) => {
+export const Header = () => {
+    const { handleLogOut, currentRoom } = useChat();
 
     return (
         <Box sx={{ display: "flex",
@@ -14,8 +12,10 @@ export const Header = ({ logOut }: HeaderProps) => {
             alignItems: 'center',
             gap: 4
         }}>
-            <h2>Chat Window</h2>
-            <Button sx={{ marginLeft: "auto" }} onClick={logOut}>Logout</Button>
+            {currentRoom && (
+                <Typography variant="h4">{currentRoom}</Typography>
+            )}
+            <Button sx={{ marginLeft: "auto" }} onClick={handleLogOut}>Logout</Button>
         </Box>
     )
 }

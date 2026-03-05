@@ -2,7 +2,7 @@ import { Input, Stack, Card, Button, Paper, Snackbar, Alert } from "@mui/materia
 import { useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-import { useSocket } from "../utils/ChatContext";
+import { useSocket } from "../utils/SocketContext";
 
 
 export default function LoginPage() {
