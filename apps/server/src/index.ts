@@ -138,7 +138,6 @@ io.on("connection", (socket) => {
             timestamp: Date.now(),
             avatarColor: data.avatarColor
         })
-        console.log('message sent')
     });
 });
 

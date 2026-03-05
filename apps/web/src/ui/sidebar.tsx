@@ -79,7 +79,8 @@ export const SideBar = ({ rooms, currentRoom, onJoin, onCreate }: SideBarProps) 
                                         onClick={() => onJoin(r)}
                                         sx={{ 
                                             bgcolor: currentRoom === r ? grey[200] : 'background.paper',
-                                            ":hover": { cursor: "pointer", bgcolor: grey[100] }
+                                            ":hover": { cursor: "pointer", bgcolor: grey[300] },
+                                            p: 1, mb: 1
                                         }}
                                     ><Typography>{r}</Typography></Card>
                                 )
@@ -89,7 +90,7 @@ export const SideBar = ({ rooms, currentRoom, onJoin, onCreate }: SideBarProps) 
                         <div>
                             {users.map((u) => {
                                 return (
-                                    <Card key={u} ><Typography>{u}</Typography></Card>
+                                    <Card key={u} sx={{ p: 1, mb: 1 }} ><Typography>{u}</Typography></Card>
                                 )
                             })}
                         </div>
