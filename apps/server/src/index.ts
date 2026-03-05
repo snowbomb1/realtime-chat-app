@@ -124,6 +124,7 @@ io.on("connection", (socket) => {
     });
     socket.on("message:send", (data) => {
         if (!data?.room || !data.message) return;
+        if (data.message.length > 500) return;
         if (isRateLimited(id, 10, 5000)) {
             socket.emit('error', { message: 'You are sending messages too fast' });
             return;

@@ -66,6 +66,18 @@ export default function ChatPage() {
         socketRef.current?.on('message:new', (message) => {
             const localString = new Date(message.timestamp).toLocaleString();
             setMessages((prev) => [...prev, { ...message, timestamp: localString }]);
+            if (message.username !== username) {
+                const ctx = new AudioContext();
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                oscillator.frequency.value = 440;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.3);
+            }
         });
 
         socketRef.current?.on('typing:update', ({ username, isTyping }) => {

@@ -1,6 +1,7 @@
-import { Box, Button, Input, Stack } from "@mui/material";
+import { Box, Button, IconButton, Input, Stack, Typography } from "@mui/material";
 import { useCallback, useState } from "react";
 import type { Socket } from "socket.io-client";
+import EmojiPicker, { type EmojiClickData } from 'emoji-picker-react';
 
 interface MessageInputProps {
     socketRef: React.RefObject<Socket | null>;
@@ -13,6 +14,7 @@ interface MessageInputProps {
 
 export const MessageInput = ({ socketRef, typingRef, currentRoom, disabled, onSubmit }: MessageInputProps) => {
     const [newMessage, setNewMessage] = useState<string>("");
+    const [showPicker, setShowPicker] = useState(false);
 
     const handleSubmit = useCallback(() => {
         if (typingRef.current) clearTimeout(typingRef.current);
@@ -21,11 +23,17 @@ export const MessageInput = ({ socketRef, typingRef, currentRoom, disabled, onSu
         setNewMessage("");
     }, [newMessage, onSubmit])
 
+    const handleEmojiClick = (emojiData: EmojiClickData) => {
+        setNewMessage(prev => prev + emojiData.emoji);
+        setShowPicker(false);
+    };
+
     return (
         <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" gap={1}>
                 <Input
-                    fullWidth 
+                    fullWidth
+                    inputProps={{ maxLength: 500 }}
                     value={newMessage} 
                     onChange={({ target }) => {
                         setNewMessage(target.value);
@@ -44,6 +52,19 @@ export const MessageInput = ({ socketRef, typingRef, currentRoom, disabled, onSu
                     }}
                     disabled={disabled}
                 />
+                <Box sx={{ position: 'relative' }}>
+                    <IconButton onClick={() => setShowPicker(prev => !prev)}>
+                        😀
+                    </IconButton>
+                    {showPicker && (
+                        <Box sx={{ position: 'absolute', bottom: '48px', right: 0, zIndex: 1000 }}>
+                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                        </Box>
+                    )}
+                </Box>
+                <Typography variant="caption" color={newMessage.length > 450 ? 'error' : 'text.secondary'}>
+                    {newMessage.length}/500
+                </Typography>
                 <Button variant="contained"
                     onClick={handleSubmit}
                     disabled={!newMessage.length || disabled}
