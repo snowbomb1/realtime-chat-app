@@ -64,7 +64,6 @@ io.on("connection", (socket) => {
     socket.onAny((event, data) => {
         console.log('incoming event:', event, data);
     });
-    socket.emit('room:list', [...roomUsers.keys()])
     socket.on("room:create", (data) => {
         if (!data?.room) return;
         const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
@@ -78,7 +77,7 @@ io.on("connection", (socket) => {
         if (!data?.room) return;
         const user = userNames.get(id)
         roomUsers.get(data.room)?.add(id)
-        io.to(data.room).emit("room:users", { userList: roomUsers.get(data.room) })
+        io.to(data.room).emit('room:users', Array.from(roomUsers.get(data.room) ?? []).map(id => userNames.get(id)));
         io.to(data.room).emit('message:new', {
             id: uuid(),
             username: 'system',
@@ -104,12 +103,14 @@ io.on("connection", (socket) => {
                 timestamp: Date.now(),
                 type: 'system'
             });
+            io.to(data.room).emit('room:users', Array.from(roomUsers.get(data.room) ?? []).map(id => userNames.get(id)));
         }
     });
     socket.on('user:join', (data) => {
         const clean = sanitizeHtml(data.userName, { allowedTags: [], allowedAttributes: {} });
         if (!clean.trim()) return;
         userNames.set(id, data.userName);
+        socket.emit('room:list', [...roomUsers.keys()])
     });
     socket.on("disconnect", () => {
         userNames.delete(id);

@@ -1,5 +1,5 @@
-import { Drawer, List, ListItemButton, ListItemText } from "@mui/material";
-import { grey } from "@mui/material/colors";
+import { Box, Drawer, List, ListItemButton, ListItemText, Typography } from "@mui/material";
+import { blue, grey } from "@mui/material/colors";
 import { useChat } from "../utils/ChatContext";
 
 interface RoomListProps {
@@ -18,23 +18,34 @@ export const RoomList = ({ isMobile, isOpen, onClose }: RoomListProps) => {
             open={isOpen}
             onClose={onClose}
         >
-            <List>
-                {rooms.map((r) => {
-                    return (
-                        <ListItemButton
-                            sx={{ bgcolor: currentRoom ? grey[400] : grey[100] }}
-                            key={r}
-                            disabled={r === currentRoom}
-                            onClick={() => {
-                                handleJoinRoom(r)
-                                onClose();
-                            }}
-                        >
-                            <ListItemText>{r}</ListItemText>
-                        </ListItemButton>
-                    )
-                })}
-            </List>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 2, overflow: "auto" }}>
+                <Typography
+                    sx={{ mb: 2, borderBottom: "1px solid", borderBottomColor: "divider", textAlign: "center" }}
+                    variant="h4"
+                >Available Rooms</Typography>
+                <List>
+                    {rooms.map((r) => {
+                        return (
+                            <ListItemButton
+                                sx={{
+                                    bgcolor: currentRoom === r ? blue[300] : "white",
+                                    ":hover": {
+                                        bgcolor: currentRoom !== r ? grey[200] : blue[300]
+                                    }
+                                }}
+                                key={r}
+                                disabled={r === currentRoom}
+                                onClick={() => {
+                                    handleJoinRoom(r)
+                                    onClose();
+                                }}
+                            >
+                                <ListItemText>{r}</ListItemText>
+                            </ListItemButton>
+                        )
+                    })}
+                </List>
+            </Box>
         </Drawer>
     )
 }

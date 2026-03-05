@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Box, Tab, Tabs } from "@mui/material";
 import { Room, Person, Create } from '@mui/icons-material';
 import { RoomList } from "./room-list";
 import { UserList } from "./user-list";
@@ -13,7 +13,7 @@ export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
     if (isMobile) {
         return (
             <>
-                <Box sx={{ width: "100%", pb: 2 }}>
+                <Box sx={{ position: 'fixed', bottom: 0, width: 'calc(100vw - 16px)', zIndex: 1000, overflow: 'hidden' }}>
                     <BottomNavigation showLabels value={value}
                         onChange={(_event, newValue) => setValue(newValue)}
                     >
@@ -46,8 +46,38 @@ export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
     }
 
     return (
-        <div>
+        <>
+            <Box
+                sx={{ display: "flex", flexDirection: "column", left: 0, width: 80,
+                    pl: 1, borderRight: "1px solid", borderRightColor: "divider",
+                    minWidth: 80
+                }}
+            >
+                <Tabs orientation="vertical" value={value} onChange={(_event, value) => setValue(value)}>
+                    <Tab disabled={!rooms.length} label="Rooms" icon={<Room />} />
+                    <Tab disabled={!currentRoom?.length} label="Users" icon={<Person />} />
+                    <Tab label="Add Room" icon={<Create />} />
+                </Tabs>
+            </Box>
+            {value === 0 && (
+                <RoomList
+                    isMobile={false} isOpen={value === 0}
+                    onClose={() => setValue(null)}
+                />
 
-        </div>
+            )}
+            {value === 1 && (
+                <UserList
+                    isMobile={false} isOpen={value === 1}
+                    onClose={() => setValue(null)}
+                />
+            )}
+            {value === 2 && (
+                <RoomCreate
+                    isMobile={false} isOpen={value === 2}
+                    onClose={() => setValue(null)}
+                />
+            )}
+        </>
     )
 }

@@ -15,7 +15,7 @@ export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
     }, [messages]);
 
     return (
-        <Box ref={feedRef} sx={{ p: 2, overflow: "auto", flex: 1 }}>
+        <Box ref={feedRef} sx={{ p: 2, overflow: "auto", flex: 1, pb: isMobile ? '72px' : 2 }}>
             {messages.map((message) => {
                 const isSystem = message.type === "system"
                 const isOwnMessage = message.username === username

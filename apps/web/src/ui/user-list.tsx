@@ -1,4 +1,4 @@
-import { Drawer, List, ListItem } from "@mui/material";
+import { Box, Drawer, List, ListItem, ListItemText, Typography } from "@mui/material";
 import { useChat } from "../utils/ChatContext";
 
 interface UserListProps {
@@ -17,13 +17,21 @@ export const UserList = ({ isMobile, isOpen, onClose }: UserListProps) => {
             open={isOpen}
             onClose={onClose}
         >
-            <List>
-                {users.map((u) => {
-                    return (
-                        <ListItem key={u}>{u}</ListItem>
-                    )
-                })}
-            </List>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 2, overflow: "auto" }}>
+                <Typography
+                    sx={{ mb: 2, borderBottom: "1px solid", borderBottomColor: "divider", textAlign: "center" }}
+                    variant="h4"
+                >Users</Typography>
+                <List>
+                    {users.map((u) => {
+                        return (
+                            <ListItem key={u}>
+                                <ListItemText primary={u} />
+                            </ListItem>
+                        )
+                    })}
+                </List>
+            </Box>
         </Drawer>
     )
 }

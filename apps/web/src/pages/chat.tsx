@@ -17,34 +17,29 @@ export default function ChatPage() {
             <Header />
             {/* Chat Window*/}
             <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
-                {/* Side Bar */}
-                {/* <SideBar rooms={rooms} 
-                    currentRoom={currentRoom} 
-                    onCreate={handleCreateRoom} 
-                    onJoin={handleJoinRoom}
-                /> */}
+               {!isMobile && <Navigation isMobile={false} />}
                 {/* Message area */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', pb: isMobile ? '56px' : 0 }}>
                     <MessageWindow isMobile={isMobile} />
                     <MessageInput />
                 </Box>
             </Box>
-            <Navigation isMobile={isMobile} />
-           <Snackbar
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            open={error !== null}
-            onClose={handleClearError}
-            key={error}
-            autoHideDuration={3000}
-        >
-            <Alert onClose={handleClearError}
-                severity="error"
-                variant="filled"
-                sx={{ width: "100%" }}
+            {isMobile && <Navigation isMobile={true} />}
+            <Snackbar
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                open={error !== null}
+                onClose={handleClearError}
+                key={error}
+                autoHideDuration={3000}
             >
-                {error}
-            </Alert>
-        </Snackbar>
+                <Alert onClose={handleClearError}
+                    severity="error"
+                    variant="filled"
+                    sx={{ width: "100%" }}
+                >
+                    {error}
+                </Alert>
+            </Snackbar>
         </Box>
     )
 }
