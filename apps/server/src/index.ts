@@ -6,6 +6,10 @@ import sanitizeHtml from 'sanitize-html';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
+import { isRateLimited } from './utils/isRateLimited';
+import { checkUser, registerUser } from './lib/actions';
+import { createToken } from './utils/tokenSigning';
+import { isMatchingHash } from './utils/hashing';
 
 const CLIENT_URL = 'http://localhost:5173';
 
@@ -28,15 +32,30 @@ const userNames = new Map();
 const roomUsers = new Map<string, Set<string>>();
 const messageTimestamps = new Map<string, number[]>();
 
-function isRateLimited(socketId: string, limit: number, windowMs: number): boolean {
-    const now = Date.now();
-    const timestamps = messageTimestamps.get(socketId) ?? [];
-    const recent = timestamps.filter(t => now - t < windowMs);
-    messageTimestamps.set(socketId, recent);
-    if (recent.length >= limit) return true;
-    messageTimestamps.set(socketId, [...recent, now]);
-    return false;
-}
+app.post('/auth/login', async (req, res) => {
+    const username = req.body.username;
+    const pass = req.body.pass;
+    if (!pass || !username) return res.status(400).json({ error: "Missing params" });
+    const { exists, user, error } = await checkUser(username, true);
+    if (error) return res.status(400).json({ error: error });
+    if (!exists || !user) return res.status(404).json({ error: "User not registered" });
+    const validPass = await isMatchingHash(pass, user.passHash);
+    if (!validPass) return res.status(400).json({ error: "Invalid password" })
+    const token = createToken(user?.id, user?.username);
+    res.json({ token, username, id: user.id });
+});
+
+app.post('/auth/register', async (req, res) => {
+    const username = req.body.username;
+    const pass = req.body.pass;
+    if (!pass || !username) return res.status(400).json({ error: "Missing params" });
+    const { exists, user, error } = await checkUser(username, false);
+    if (exists) return res.status(400).json({ error: "Username already taken" });
+    const register = await registerUser(username, pass);
+    if (register.error || !register.user) return res.status(400).json({ error: "Failed to register, try again" });
+    const token = createToken(register.user.id, username);
+    res.json({ token, username, id: register.user.id });
+});
 
 app.get('/users', (req, res) => {
     const names = [...userNames.values()];
@@ -131,7 +150,7 @@ io.on("connection", (socket) => {
     socket.on("message:send", (data) => {
         if (!data?.room || !data.message) return;
         if (data.message.length > 500) return;
-        if (isRateLimited(id, 10, 5000)) {
+        if (isRateLimited({socketId: id, messageTimestamps})) {
             socket.emit('error', { message: 'You are sending messages too fast' });
             return;
         }
