@@ -14,6 +14,7 @@ import { isMatchingHash } from './utils/hashing';
 
 const CLIENT_URL = process.env.NODE_ENV === 'development'
     ? 'http://localhost:5173' : 'https://realtime-chat-app-web-tan.vercel.app';
+const PORT = process.env.PORT || 3000;
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -178,4 +179,8 @@ io.on("connection", (socket) => {
             avatarColor: data.avatarColor
         })
     });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
