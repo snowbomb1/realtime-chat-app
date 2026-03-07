@@ -1,7 +1,6 @@
 {
   "name": "server",
-  "version": "0.0.0",
-  "type": "module",
+  "version": "0.0.1",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -26,6 +25,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.11.0",
     "@types/sanitize-html": "^2.16.0",
     "@types/uuid": "^11.0.0",
     "dotenv": "^17.3.1",
