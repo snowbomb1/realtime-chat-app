@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, Input, Stack, Typography } from "@mui/material";
+import { Box, Button, IconButton, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import EmojiPicker, { type EmojiClickData } from 'emoji-picker-react';
 import { useSocket } from "../utils/SocketContext";
@@ -37,9 +37,9 @@ export const MessageInput = () => {
     return (
         <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
             <Stack direction="row" gap={1}>
-                <Input
+                <TextField
+                    label="Message Input"
                     fullWidth
-                    inputProps={{ maxLength: 500 }}
                     value={newMessage} 
                     onChange={({ target }) => {
                         setNewMessage(target.value);

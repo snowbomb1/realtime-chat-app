@@ -53,7 +53,7 @@ export const Registration = ({ isOpen, onRegister, onClose }: RegistrationProps)
                 sx={{
                     display: "flex", flexDirection: "column",
                     border: "1px solid", borderColor: "divider",
-                    p: 2, width: "70vw"
+                    p: 2, minWidth: "70vw"
                 }
             }>
                 <Box id="header"

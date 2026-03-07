@@ -12,19 +12,27 @@ export default function ChatPage() {
     const { error, handleClearError  } = useChat();
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', width: "100%", height: '100vh', color: 'black', bgcolor: "background.paper" }}>
+        <Box sx={{
+            display: 'flex', flexDirection: 'column',
+            width: "100%", height: '100vh', color: 'black',
+            backgroundColor: "#f0f4f9", overflow: "hidden"
+        }}>
             {/* Header */}
             <Header />
-            {/* Chat Window*/}
-            <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
-               {!isMobile && <Navigation isMobile={false} />}
-                {/* Message area */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', pb: isMobile ? '56px' : 0 }}>
-                    <MessageWindow isMobile={isMobile} />
-                    <MessageInput />
+             <Box sx={{ display: "flex", flexDirection: "row", flex: 1, overflow: 'hidden' }}>
+                {/* SideNav on Desktop */}
+                {!isMobile && <Navigation isMobile={false} />}
+                {/* Chat Window*/}
+                <Box sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+                    {/* Message area */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', pb: isMobile ? '56px' : 0 }}>
+                        <MessageWindow isMobile={isMobile} />
+                        <MessageInput />
+                    </Box>
                 </Box>
+                {/* BottomNav on Mobile */}
+                {isMobile && <Navigation isMobile={true} />}
             </Box>
-            {isMobile && <Navigation isMobile={true} />}
             <Snackbar
                 anchorOrigin={{ vertical: "top", horizontal: "center" }}
                 open={error !== null}

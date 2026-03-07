@@ -148,6 +148,7 @@ io.on("connection", (socket) => {
         socket.emit('room:list', [...roomUsers.keys()])
     });
     socket.on("disconnect", () => {
+        socket.emit("room:leave");
         messageTimestamps.delete(id);
     });
     socket.on('typing:start', () => {

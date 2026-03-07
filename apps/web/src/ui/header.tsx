@@ -17,5 +17,5 @@ export const Header = () => {
             )}
             <Button sx={{ marginLeft: "auto" }} onClick={handleLogOut}>Logout</Button>
         </Box>
-    )
+    );
 }

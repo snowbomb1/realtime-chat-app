@@ -15,7 +15,9 @@ export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
     }, [messages]);
 
     return (
-        <Box ref={feedRef} sx={{ p: 2, overflow: "auto", flex: 1, pb: isMobile ? '72px' : 2 }}>
+        <Box ref={feedRef}
+            sx={{ p: 2, overflow: "auto", flex: 1, pb: isMobile ? '72px' : 2 }}
+        >
             {messages.map((message) => {
                 const isSystem = message.type === "system"
                 const isOwnMessage = message.username === username
@@ -46,7 +48,7 @@ export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
                                                 {message.timestamp}
                                             </Typography>
                                         </Box>
-                                        <Typography sx={{ textAlign: isOwnMessage ? 'left' : 'right' }} variant="body1">
+                                        <Typography sx={{ textAlign: isOwnMessage ? 'left' : 'right', wordBreak: 'break-word' }} variant="body1">
                                             {message.message}
                                         </Typography>
                                     </Box>

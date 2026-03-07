@@ -8,12 +8,12 @@ import { RoomCreate } from "./room-create";
 
 export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
     const { rooms, currentRoom } = useChat();
-    const [value, setValue] = useState<number | null>(null);
+    const [value, setValue] = useState<number | false>(false);
 
     if (isMobile) {
         return (
             <>
-                <Box sx={{ position: 'fixed', bottom: 0, width: 'calc(100vw - 16px)', zIndex: 1000, overflow: 'hidden' }}>
+                <Box sx={{ position: 'fixed', bottom: 0, width: 'calc(100vw - 16px)' }}>
                     <BottomNavigation showLabels value={value}
                         onChange={(_event, newValue) => setValue(newValue)}
                     >
@@ -22,25 +22,9 @@ export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
                         <BottomNavigationAction label="Create Room" icon={<Create />} />
                     </BottomNavigation>
                 </Box>
-                {value === 0 && (
-                    <RoomList
-                        isMobile={true} isOpen={value === 0}
-                        onClose={() => setValue(null)}
-                    />
-
-                )}
-                {value === 1 && (
-                    <UserList
-                        isMobile={true} isOpen={value === 1}
-                        onClose={() => setValue(null)}
-                    />
-                )}
-                {value === 2 && (
-                    <RoomCreate
-                        isMobile={true} isOpen={value === 2}
-                        onClose={() => setValue(null)}
-                    />
-                )}
+                <RoomList isMobile={true} isOpen={value === 0} onClose={() => setValue(false)} />
+                <UserList isMobile={true} isOpen={value === 1} onClose={() => setValue(false)} />
+                <RoomCreate isMobile={true} isOpen={value === 2} onClose={() => setValue(false)} />
             </>
         )
     }
@@ -50,7 +34,7 @@ export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
             <Box
                 sx={{ display: "flex", flexDirection: "column", left: 0, width: 80,
                     pl: 1, borderRight: "1px solid", borderRightColor: "divider",
-                    minWidth: 80
+                    minWidth: 80, height: "100%"
                 }}
             >
                 <Tabs orientation="vertical" value={value} onChange={(_event, value) => setValue(value)}>
@@ -59,25 +43,9 @@ export const Navigation = ({ isMobile }: { isMobile: boolean }) => {
                     <Tab label="Add Room" icon={<Create />} />
                 </Tabs>
             </Box>
-            {value === 0 && (
-                <RoomList
-                    isMobile={false} isOpen={value === 0}
-                    onClose={() => setValue(null)}
-                />
-
-            )}
-            {value === 1 && (
-                <UserList
-                    isMobile={false} isOpen={value === 1}
-                    onClose={() => setValue(null)}
-                />
-            )}
-            {value === 2 && (
-                <RoomCreate
-                    isMobile={false} isOpen={value === 2}
-                    onClose={() => setValue(null)}
-                />
-            )}
+            <RoomList isMobile={false} isOpen={value === 0} onClose={() => setValue(false)} />
+            <UserList isMobile={false} isOpen={value === 1} onClose={() => setValue(false)} />
+            <RoomCreate isMobile={false} isOpen={value === 2} onClose={() => setValue(false)} />
         </>
     )
 }
