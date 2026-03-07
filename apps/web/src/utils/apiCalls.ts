@@ -1,4 +1,6 @@
-export const URL = "http://localhost:3000"
+export const URL = import.meta.env.DEV
+    ? "http://localhost:3000" 
+    : "https://realtime-chat-app-still-lake-5338.fly.dev"
 
 export interface AuthOutput {
     id: string;
