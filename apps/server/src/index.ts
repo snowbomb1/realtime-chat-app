@@ -13,7 +13,7 @@ import { createToken, isValidToken } from './utils/tokenSigning';
 import { isMatchingHash } from './utils/hashing';
 
 const CLIENT_URL = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5173' : 'https://realtime-chat-app-54pufk3kx-nathaniels-projects-f6634e58.vercel.app/';
+    ? 'http://localhost:5173' : 'https://realtime-chat-app-web-tan.vercel.app';
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
