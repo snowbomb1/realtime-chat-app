@@ -40,15 +40,17 @@ export default function LoginPage() {
     return (
         <Paper elevation={0}
             sx={{
-                height: "98vh",
+                height: "100vh",
                 width: "100%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                backgroundColor: "#f0f4f9",
+                overflow: "hidden"
             }}
         >
-            <Card raised sx={{ display: "flex", flexDirection: "column", p: 4, width: "100%", maxWidth: 400 }}>
-                <Box sx={{ display: "flex", flexDirection: "row", justifyItems: "center", alignItems: "center" }}>
+            <Card raised sx={{ p: 4, width: "calc(100% - 32px)", maxWidth: 400 }}>
+                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
                     <Typography variant="h6" sx={{ textAlign: "left" }}>
                         Login
                     </Typography>
@@ -82,14 +84,15 @@ export default function LoginPage() {
                             }
                         }}
                     />
+                    <Button
+                        sx={{ mt: 2 }}
+                        variant="contained"
+                        disabled={!username.length || !isValid(password)}
+                        onClick={handleLogin}
+                    >
+                        Submit
+                    </Button>
                 </Box>
-                <Button
-                    variant="contained"
-                    disabled={!username.length || !isValid(password)}
-                    onClick={handleLogin}
-                >
-                    Submit
-                </Button>
             </Card>
             <Registration isOpen={registrationIsOpen} onClose={toggleModal} onRegister={handleJoin} />
             <Snackbar
