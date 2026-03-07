@@ -98,7 +98,7 @@ io.on("connection", (socket) => {
     const username = socket.data.username;
 
     socket.onAny((event, data) => {
-        console.log('incoming event:', event, data);
+        console.log('incoming event:', event, 'data:', data);
     });
     socket.on("room:create", (data) => {
         if (!data?.room) return;
@@ -178,8 +178,4 @@ io.on("connection", (socket) => {
             avatarColor: data.avatarColor
         })
     });
-});
-
-server.listen(3000, () => {
-    console.log('server running on port 3000')
 });
