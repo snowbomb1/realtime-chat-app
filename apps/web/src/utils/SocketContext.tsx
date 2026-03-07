@@ -4,6 +4,8 @@ import { Socket } from 'socket.io-client';
 interface SocketContextType {
   username: string;
   setUsername: React.Dispatch<React.SetStateAction<string>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
   socketRef: React.RefObject<Socket | null>;
 }
 
@@ -11,10 +13,11 @@ const SocketContext = createContext<SocketContextType | null>(null);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
     const [username, setUsername] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
     const socketRef = useRef<Socket | null>(null);
 
     return (
-        <SocketContext.Provider value={{ username, setUsername, socketRef }}>
+        <SocketContext.Provider value={{ username, setUsername, password, setPassword, socketRef }}>
             {children}
         </SocketContext.Provider>
     )

@@ -86,7 +86,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }, [socketRef.current, currentRoom]);
 
     const handleJoinRoom = useCallback((room: string) => {
-        if (currentRoom) socketRef.current?.emit('room:leave', { room: currentRoom });
+        if (currentRoom) socketRef.current?.emit('room:leave');
         socketRef.current?.emit('room:join', { room });
         setCurrentRoom(room);
         setMessages([]);
@@ -94,7 +94,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     const handleCreateRoom = useCallback((room: string) => {
         if (currentRoom?.length) {
-            socketRef.current?.emit("room:leave", { room: currentRoom });
+            socketRef.current?.emit("room:leave");
             setMessages([])
         }
         socketRef.current?.emit("room:create", { room });
@@ -103,7 +103,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     const handleSendMessage = useCallback((message: string) => {
         const newId = uuid();
-        socketRef.current?.emit('message:send', { id: newId, user: username, room: currentRoom, message: message, type: 'user', avatarColor });
+        socketRef.current?.emit('message:send', { id: newId, message: message, type: 'user', avatarColor });
     }, [username, currentRoom]);
 
     const handleLogOut = useCallback(() => {

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
@@ -8,7 +9,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { isRateLimited } from './utils/isRateLimited';
 import { checkUser, registerUser } from './lib/actions';
-import { createToken } from './utils/tokenSigning';
+import { createToken, isValidToken } from './utils/tokenSigning';
 import { isMatchingHash } from './utils/hashing';
 
 const CLIENT_URL = 'http://localhost:5173';
@@ -23,19 +24,22 @@ const app = express();
 app.use(cors({ origin: CLIENT_URL }));
 app.use(limiter);
 app.use(helmet());
+app.use(express.json())
 const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: CLIENT_URL }
 });
 
-const userNames = new Map();
 const roomUsers = new Map<string, Set<string>>();
 const messageTimestamps = new Map<string, number[]>();
 
 app.post('/auth/login', async (req, res) => {
     const username = req.body.username;
-    const pass = req.body.pass;
+    const pass = req.body.password;
     if (!pass || !username) return res.status(400).json({ error: "Missing params" });
+    const cleanUser = sanitizeHtml(username, { allowedTags: [], allowedAttributes: {} });
+    const cleanPass = sanitizeHtml(pass, { allowedTags: [], allowedAttributes: {} });
+    if (!cleanUser.trim() || !cleanPass.trim()) return;
     const { exists, user, error } = await checkUser(username, true);
     if (error) return res.status(400).json({ error: error });
     if (!exists || !user) return res.status(404).json({ error: "User not registered" });
@@ -47,19 +51,17 @@ app.post('/auth/login', async (req, res) => {
 
 app.post('/auth/register', async (req, res) => {
     const username = req.body.username;
-    const pass = req.body.pass;
+    const pass = req.body.password;
     if (!pass || !username) return res.status(400).json({ error: "Missing params" });
+    const cleanUser = sanitizeHtml(username, { allowedTags: [], allowedAttributes: {} });
+    const cleanPass = sanitizeHtml(pass, { allowedTags: [], allowedAttributes: {} });
+    if (!cleanUser.trim() || !cleanPass.trim()) return;
     const { exists, user, error } = await checkUser(username, false);
     if (exists) return res.status(400).json({ error: "Username already taken" });
     const register = await registerUser(username, pass);
     if (register.error || !register.user) return res.status(400).json({ error: "Failed to register, try again" });
     const token = createToken(register.user.id, username);
     res.json({ token, username, id: register.user.id });
-});
-
-app.get('/users', (req, res) => {
-    const names = [...userNames.values()];
-    res.json({ users: names })
 });
 
 app.get('/rooms', (req, res) => {
@@ -74,12 +76,25 @@ app.get('/users/:roomId', (req, res) => {
         res.json({ users: [] });
         return;
     }
-    const names = Array.from(sockets).map(socketId => userNames.get(socketId));
+    const names = Array.from(roomUsers.get(roomId) ?? []);
     res.json({ users: names });
-})
+});
+
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error("Token missing"));
+    const isValid = isValidToken(token);
+    if (!isValid) return next(new Error("Invalid token"));
+    socket.data.username = isValid?.username;
+    socket.data.userId = isValid?.id;
+    socket.data.token = token;
+    next();
+});
 
 io.on("connection", (socket) => {
     const id = socket.id;
+    const username = socket.data.username;
+
     socket.onAny((event, data) => {
         console.log('incoming event:', event, data);
     });
@@ -87,68 +102,64 @@ io.on("connection", (socket) => {
         if (!data?.room) return;
         const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
         if (!clean.trim()) return;
+        socket.data.room = data.room;
         const room = data.room;
-        roomUsers.set(room, new Set([id]));
+        roomUsers.set(room, new Set([username]));
         socket.join(data.room)
         io.emit('room:list', [...roomUsers.keys()]);
     });
     socket.on("room:join", (data) => {
         if (!data?.room) return;
-        const user = userNames.get(id)
-        roomUsers.get(data.room)?.add(id)
-        io.to(data.room).emit('room:users', Array.from(roomUsers.get(data.room) ?? []).map(id => userNames.get(id)));
+        const clean = sanitizeHtml(data.room, { allowedTags: [], allowedAttributes: {} });
+        if (!clean.trim()) return;
+        socket.data.room = data.room;
+        roomUsers.get(data.room)?.add(username)
+        io.to(data.room).emit('room:users', Array.from(roomUsers.get(data.room) ?? []));
         io.to(data.room).emit('message:new', {
             id: uuid(),
             username: 'system',
-            message: `${user} joined the chat`,
+            message: `${username} joined the chat`,
             timestamp: Date.now(),
             type: 'system'
         });
         socket.join(data.room)
     });
-    socket.on("room:leave", (data) => {
-        if (!data?.room) return;
-        const user = userNames.get(id);
-        roomUsers.get(data.room)?.delete(id);
-        socket.leave(data.room);
-        if (roomUsers.get(data.room)?.size === 0) {
-            roomUsers.delete(data.room);
+    socket.on("room:leave", () => {
+        const room = socket.data.room;
+        roomUsers.get(room)?.delete(username);
+        socket.leave(room);
+        if (roomUsers.get(room)?.size === 0) {
+            roomUsers.delete(room);
             io.emit('room:list', [...roomUsers.keys()]);
         } else {
-            io.to(data.room).emit('message:new', {
+            io.to(room).emit('message:new', {
                 id: uuid(),
                 username: 'system',
-                message: `${user} left the chat`,
+                message: `${username} left the chat`,
                 timestamp: Date.now(),
                 type: 'system'
             });
-            io.to(data.room).emit('room:users', Array.from(roomUsers.get(data.room) ?? []).map(id => userNames.get(id)));
+            io.to(room).emit('room:users', Array.from(roomUsers.get(room) ?? []));
         }
     });
-    socket.on('user:join', (data) => {
-        const clean = sanitizeHtml(data.userName, { allowedTags: [], allowedAttributes: {} });
-        if (!clean.trim()) return;
-        userNames.set(id, data.userName);
+    socket.on('user:join', () => {
         socket.emit('room:list', [...roomUsers.keys()])
     });
     socket.on("disconnect", () => {
-        userNames.delete(id);
         messageTimestamps.delete(id);
     });
-    socket.on('typing:start', (data) => {
-        if (!data?.room) return;
-        const user = userNames.get(id);
-        const room = data.room;
-        socket.broadcast.to(room).emit('typing:update', { username: user, isTyping: true });
+    socket.on('typing:start', () => {
+        const room = socket.data.room;
+        socket.broadcast.to(room).emit('typing:update', { username: username, isTyping: true });
     });
 
-    socket.on('typing:stop', (data) => {
-        if (!data?.room) return;
-        const user = userNames.get(id);
-        socket.broadcast.to(data.room).emit('typing:update', { username: user, isTyping: false });
+    socket.on('typing:stop', () => {
+        const room = socket.data.room;
+        socket.broadcast.to(room).emit('typing:update', { username: username, isTyping: false });
     });
     socket.on("message:send", (data) => {
-        if (!data?.room || !data.message) return;
+        const room = socket.data.room;
+        if (!data.message) return;
         if (data.message.length > 500) return;
         if (isRateLimited({socketId: id, messageTimestamps})) {
             socket.emit('error', { message: 'You are sending messages too fast' });
@@ -156,10 +167,9 @@ io.on("connection", (socket) => {
         }
         const clean = sanitizeHtml(data.message, { allowedTags: [], allowedAttributes: {} });
         if (!clean.trim()) return;
-        const user = userNames.get(id);
-        io.to(data.room).emit('message:new', {
+        io.to(room).emit('message:new', {
             id: data.id,
-            username: user,
+            username: username,
             message: data.message,
             timestamp: Date.now(),
             avatarColor: data.avatarColor

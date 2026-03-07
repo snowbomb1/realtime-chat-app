@@ -24,7 +24,7 @@ export const MessageInput = () => {
 
     const handleSubmit = useCallback(() => {
         if (typingRef.current) clearTimeout(typingRef.current);
-        socketRef.current?.emit('typing:stop', { room: currentRoom });
+        socketRef.current?.emit('typing:stop');
         handleSendMessage(newMessage);
         setNewMessage("");
     }, [newMessage, handleSendMessage])
@@ -43,11 +43,11 @@ export const MessageInput = () => {
                     value={newMessage} 
                     onChange={({ target }) => {
                         setNewMessage(target.value);
-                        socketRef.current?.emit('typing:start', { room: currentRoom });
+                        socketRef.current?.emit('typing:start');
 
                         if (typingRef.current) clearTimeout(typingRef.current);
                         typingRef.current = setTimeout(() => {
-                            socketRef.current?.emit('typing:stop', { room: currentRoom });
+                            socketRef.current?.emit('typing:stop');
                         }, 1000);
                     }}
                     onKeyDown={(event) => {
