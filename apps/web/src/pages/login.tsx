@@ -1,4 +1,4 @@
-import { Card, Button, Paper, Snackbar, Alert, Typography, TextField, Box } from "@mui/material";
+import { Container, Header, Input, Box, Button, Toast, AppLayout, TopNav } from '@snowbomb1/nova-ui';
 import { useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,8 @@ import { useSocket } from "../utils/SocketContext";
 import { Registration } from "../ui/registration";
 import { login, URL } from "../utils/apiCalls";
 import { isValid } from "../utils/passwordValidation";
-import { PasswordHelperText } from "../ui/password-helper";
+
+import '../wrapper.css'
 
 
 export default function LoginPage() {
@@ -38,78 +39,40 @@ export default function LoginPage() {
     }, [username, password, navigate]);
 
     return (
-        <Paper elevation={0}
-            sx={{
-                height: "100vh",
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f0f4f9",
-                overflow: "hidden"
-            }}
+        <AppLayout
+            topNav={<TopNav header={<Header variant='h2'>Nova Chat</Header>} />}
         >
-            <Card raised sx={{ p: 4, width: "calc(100% - 32px)", maxWidth: 400 }}>
-                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                    <Typography variant="h6" sx={{ textAlign: "left" }}>
-                        Login
-                    </Typography>
-                    <Button sx={{ ml: "auto" }} variant="text" onClick={toggleModal}>
-                        <Typography variant="caption">
-                            Register
-                        </Typography>
-                    </Button>
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <TextField
-                        label="Username" required value={username}
-                        onChange={({ target }) => setUsername(target.value)}
-                        onKeyDown={(event) => {
-                            if (!username.length || !isValid(password)) return;
-                            if (event.key === "Enter") {
-                                handleLogin();
-                            }
-                        }}
-                    />
-                    <TextField
-                        label="Password" required type="password"
-                        value={password} onChange={({ target }) => setPassword(target.value)}
-                        helperText={
-                            <PasswordHelperText password={password}  />
-                        }
-                        onKeyDown={(event) => {
-                            if (!username.length || !isValid(password)) return;
-                            if (event.key === "Enter") {
-                                handleLogin();
-                            }
-                        }}
-                    />
-                    <Button
-                        sx={{ mt: 2 }}
-                        variant="contained"
-                        disabled={!username.length || !isValid(password)}
-                        onClick={handleLogin}
-                    >
-                        Submit
-                    </Button>
-                </Box>
-            </Card>
-            <Registration isOpen={registrationIsOpen} onClose={toggleModal} onRegister={handleJoin} />
-            <Snackbar
-                anchorOrigin={{ vertical: "top", horizontal: "center" }}
-                open={error.length > 0}
-                onClose={() => setError("")}
-                key={error}
-                autoHideDuration={3000}
-            >
-                <Alert onClose={() => setError("")}
-                    severity="error"
-                    variant="filled"
-                    sx={{ width: "100%" }}
+            <div className="appWrapper">
+                <Container
+                    variant="elevated"
+                    padding="md"
+                    header={
+                        <Header variant="h2">Login</Header>
+                    }
+                    headerActions={
+                        <Button variant="secondary" onClick={toggleModal}>Register</Button>
+                    }
+                    footer={
+                        <Box position='center'>
+                            <Button disabled={!isValid(password)} onClick={handleLogin}>Submit</Button>
+                        </Box>
+                    }
+                >
+                    <Box direction='vertical' position="center">
+                        <Input hideClear label="Username" value={username} onChange={setUsername} />
+                        <Input hideClear label="Password" type="password" value={password} onChange={setPassword} />
+                    </Box>
+                </Container>
+                <Registration isOpen={registrationIsOpen} onClose={toggleModal} onRegister={handleJoin} />
+                <Toast
+                    visible={error?.length > 0}
+                    onDismiss={() => setError("")}
+                    position="top"
+                    status="error"
                 >
                     {error}
-                </Alert>
-            </Snackbar>
-        </Paper>
+                </Toast>
+            </div> 
+        </AppLayout>
     )
 }

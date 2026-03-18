@@ -1,43 +1,46 @@
-import { Drawer, Input, Box, Button, Typography } from "@mui/material";
 import { useChat } from "../utils/ChatContext";
 import { useState } from "react";
+import { Container, Header, Modal, Box, Input, Button } from "@snowbomb1/nova-ui";
 
 interface RoomCreateProps {
-    isMobile: boolean;
     isOpen: boolean;
     onClose: () => void;
 }
 
-export const RoomCreate = ({ isMobile, isOpen, onClose }: RoomCreateProps) => {
+export const RoomCreate = ({ isOpen, onClose }: RoomCreateProps) => {
     const { handleCreateRoom } = useChat();
     const [room, setRoom] = useState<string>("");
 
+    const handleClose = () => {
+        setRoom("");
+        onClose();
+    }
+
     return (
-        <Drawer
-            sx={{ width: isMobile ? "auto" : 300, height: 300 }}
-            anchor={isMobile ? "bottom" : "left"}
-            open={isOpen}
-            onClose={onClose}
-        >
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 4, p: 2 }}>
-                <Typography
-                    sx={{ mb: 5, borderBottom: "1px solid", borderBottomColor: "divider", textAlign: "center" }}
-                    variant="h4"
-                >Create a room</Typography>
-                <Input
-                    value={room}
-                    onChange={({ target }) => setRoom(target.value)}
-                    placeholder="Enter a room name"
-                />
-                <Button
-                    variant="outlined"
-                    sx={{ cursor: "pointer" }}
-                    disabled={room.length < 5}
-                    onClick={() => {
+        <Modal
+            size="m"
+            isVisible={isOpen}
+            onClose={handleClose}
+            header={<Header variant="h3">Create Room</Header>}
+            footer={
+                <Box direction="horizontal">
+                    <Button variant="secondary" onClick={handleClose}>Cancel</Button>
+                    <Button disabled={room.length < 5} onClick={() => {
                         handleCreateRoom(room)
-                        onClose();
+                        handleClose();
                     }}>Create</Button>
-            </Box>
-        </Drawer>
+                </Box>
+            }
+        >
+            <Container fullWidth>
+                <Box>
+                    <Input label="Room name"
+                        error={room.length > 2 && room.length < 5 ? "Room name not long enough" : undefined}
+                        helperText="Room name must be at least 5 characters"
+                        value={room} onChange={setRoom}
+                    />
+                </Box>
+            </Container>
+        </Modal>
     )
 }

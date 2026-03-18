@@ -1,5 +1,5 @@
-import { CheckCircleOutline, ErrorOutline } from "@mui/icons-material";
-import { Stack, Typography } from "@mui/material";
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { Box } from "@snowbomb1/nova-ui";
 import { memo } from "react";
 
 
@@ -15,15 +15,20 @@ export const PasswordHelperText = memo(({ password }: {password: string}) => {
     const unmet = requirements.filter(r => !r.valid);
     if (!unmet.length) return null;
     return (
-        <Stack>
-            {requirements.map(({ label, valid }) => (
-                <Typography key={label} variant="caption">
-                    {label} {!valid 
-                        ? <ErrorOutline color="error" sx={{ fontSize: 12, verticalAlign: 'middle', ml: 0.5 }} />
-                        : <CheckCircleOutline color="success" sx={{ fontSize: 12, verticalAlign: 'middle', ml: 0.5 }} />
-                    }
-                </Typography>
-            ))}
-        </Stack>
+        <Box position="left">
+            <div>
+                {requirements.map(({ label, valid }) => (
+                    <Box direction="horizontal" position='left'>
+                        <small style={{ fontSize: 10,  }} key={label}>
+                            {label}
+                        </small>
+                        {!valid 
+                        ? <XCircleIcon color='red' width={20} />
+                        : <CheckCircleIcon color="green" width={20} />
+                        }
+                    </Box>
+                ))}
+            </div>
+        </Box>
     );
 });

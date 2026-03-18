@@ -1,10 +1,10 @@
-import { Box, Button, IconButton, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import EmojiPicker, { type EmojiClickData } from 'emoji-picker-react';
+import { TextArea, Box, Container, Button } from "@snowbomb1/nova-ui";
 import { useSocket } from "../utils/SocketContext";
 import { useChat } from "../utils/ChatContext";
 
-export const MessageInput = () => {
+export const MessageInput = ({ isMobile }: { isMobile: boolean}) => {
     const { socketRef } = useSocket();
     const { currentRoom, handleSendMessage } = useChat();
     const [newMessage, setNewMessage] = useState<string>("");
@@ -35,14 +35,14 @@ export const MessageInput = () => {
     };
 
     return (
-        <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-            <Stack direction="row" gap={1}>
-                <TextField
-                    label="Message Input"
+        <Container fullWidth>
+
+            <Box direction={!isMobile ? "horizontal" : "vertical"}>
+                <TextArea label="Message Input"
                     fullWidth
-                    value={newMessage} 
-                    onChange={({ target }) => {
-                        setNewMessage(target.value);
+                    value={newMessage}
+                    onChange={(value) => {
+                        setNewMessage(value);
                         socketRef.current?.emit('typing:start');
 
                         if (typingRef.current) clearTimeout(typingRef.current);
@@ -51,41 +51,21 @@ export const MessageInput = () => {
                         }, 1000);
                     }}
                     onKeyDown={(event) => {
-                        if (!newMessage.length) return;
-                        if (event.key === "Enter") {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            event.preventDefault();
+                            if (!newMessage.length) return;
                             handleSubmit();
                         }
                     }}
                     disabled={!currentRoom?.length}
                 />
-                <Box sx={{ position: 'relative', display: "flex", flexDirection: "column-reverse", gap: 3 }}>
-                    <IconButton onClick={() => setShowPicker(prev => !prev)}>
-                        😀
-                    </IconButton>
-                    {showPicker && (
-                        <Box ref={pickerRef}
-                            sx={{
-                                position: 'fixed',
-                                bottom: { xs: '120px', sm: '80px' },
-                                left: { xs: '50%', sm: 'auto' },
-                                right: { xs: 'auto', sm: '16px' },
-                                transform: { xs: 'translateX(-50%)', sm: 'none' },
-                                zIndex: 1000,
-                                width: 'min(350px, 95vw)',
-                            }}
-                        >
-                            <EmojiPicker
-                                onEmojiClick={handleEmojiClick}
-                                width="100%"
-                                height={350}
-                            />
-                        </Box>
-                    )}
-                </Box>
-                <Typography variant="caption" color={newMessage.length > 450 ? 'error' : 'text.secondary'}>
+                <Button variant="icon" onClick={() => setShowPicker(prev => !prev)}>
+                    😀
+                </Button>
+                <small color={newMessage.length > 450 ? 'var(--color-error)' : 'var(text-color-secondary)'}>
                     {newMessage.length}/500
-                </Typography>
-                <Button variant="contained"
+                </small>
+                <Button
                     onClick={handleSubmit}
                     disabled={!newMessage.length || !currentRoom?.length}
                     onKeyDown={(event) => {
@@ -95,7 +75,16 @@ export const MessageInput = () => {
                         }
                     }}
                 >Submit</Button>
-            </Stack>
-        </Box>
+            </Box>
+            {showPicker && (
+                <div style={{ zIndex: 1000 }}>
+                    <EmojiPicker
+                        onEmojiClick={handleEmojiClick}
+                        width="100%"
+                        height={350}
+                    />
+                </div>
+            )}
+        </Container>
     )
 }

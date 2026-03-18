@@ -13,7 +13,7 @@ import { createToken, isValidToken } from './utils/tokenSigning';
 import { isMatchingHash } from './utils/hashing';
 
 const CLIENT_URL = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5173' : 'https://realtime-chat-app-web-tan.vercel.app';
+    ? 'http://localhost:5174' : 'https://realtime-chat-app-web-tan.vercel.app';
 const PORT = process.env.PORT || 3000;
 
 const limiter = rateLimit({
@@ -181,6 +181,6 @@ io.on("connection", (socket) => {
     });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

@@ -1,13 +1,18 @@
-import { Avatar, Box, Card, Typography } from "@mui/material";
+import { Container, Box } from "@snowbomb1/nova-ui";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { useEffect, useRef } from "react";
 import { useChat } from "../utils/ChatContext";
 import { useSocket } from "../utils/SocketContext";
 
-export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
+interface MessageWindowProps {
+    isMobile: boolean;
+}
+
+export const MessageWindow = ({ isMobile }: MessageWindowProps) => {
     const { username } = useSocket();
     const { typingUsers, messages } = useChat();
     const feedRef = useRef<HTMLDivElement>(null);
-    
+
     useEffect(() => {
         if (feedRef.current) {
             feedRef.current.scrollTo({ top: feedRef.current.scrollHeight, behavior: 'smooth' });
@@ -15,56 +20,34 @@ export const MessageWindow = ({ isMobile }: { isMobile: boolean }) => {
     }, [messages]);
 
     return (
-        <Box ref={feedRef}
-            sx={{ p: 2, overflow: "auto", flex: 1, pb: isMobile ? '72px' : 2 }}
-        >
+        <Container style={{ overflow: "auto" }} variant="elevated" ref={feedRef} fullWidth>
             {messages.map((message) => {
-                const isSystem = message.type === "system"
-                const isOwnMessage = message.username === username
+                const isSystem = message.type === 'system';
+                const isOwnMessage = message.username === username;
                 return (
-                    <Box key={message.id} sx={{ display: "flex",
-                        flexDirection: "row",
-                        justifyContent: isSystem ? 'center' : isOwnMessage ? 'flex-end' : 'flex-start'
-                    }}>
+                    <Box key={message.id} direction="horizontal" position={isSystem ? 'center' : isOwnMessage ? 'right' : 'left'}>
                         {!isSystem ? (
-                            <Box sx={{
-                                display: "flex" ,alignItems: "flex-start",
-                                gap: 1,
-                                flexDirection: isOwnMessage ? "row-reverse" : "row" 
-                            }}>
-                                <Avatar sx={{mt: 1, backgroundColor: message.avatarColor }}>{message.username.slice(0, 1)}</Avatar>
-                                <Card sx={{ p: 1, marginBottom: 2, width: isMobile ? 200 : 300 }}>
-                                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                                        <Box sx={{ 
-                                            display: "flex", 
-                                            flexDirection: "column", 
-                                            alignItems: isOwnMessage ? "flex-end" : "flex-start",
-                                            mb: 1
-                                        }}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {message.username}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {message.timestamp}
-                                            </Typography>
-                                        </Box>
-                                        <Typography sx={{ textAlign: isOwnMessage ? 'left' : 'right', wordBreak: 'break-word' }} variant="body1">
-                                            {message.message}
-                                        </Typography>
+                            <Box reverse={isOwnMessage} direction="horizontal" position={isOwnMessage ? 'right' : 'left'}>
+                                <UserCircleIcon width={40} color={message.avatarColor} style={{ marginTop: 4, flexShrink: 0 }} />
+                                <Container style={{ maxWidth: isMobile ? 200 : 400, width: "100%" }} fullWidth padding="sm">
+                                    <Box direction="vertical" position={isOwnMessage ? 'right' : 'left'}>
+                                        <small>{message.username}</small>
+                                        <small style={{ fontSize: 8 }}>{message.timestamp}</small>
                                     </Box>
-                                </Card>
+                                    <p style={{ wordBreak: 'break-word', marginTop: '0.5rem' }}>{message.message}</p>
+                                </Container>
                             </Box>
                         ) : (
-                            <p>{message.message} - {message.timestamp}</p>
+                            <small style={{ color: 'var(--color-text-secondary)' }}>{message.message} - {message.timestamp}</small>
                         )}
                     </Box>
-                )
+                );
             })}
             {typingUsers.length > 0 && (
-                <Typography variant="caption" sx={{ px: 2, pb: 1 }} color="text.secondary">
+                <small style={{ color: 'var(--color-text-secondary)', padding: '0 1rem' }}>
                     {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-                </Typography>
+                </small>
             )}
-        </Box>
-    )
-} 
+        </Container>
+    );
+};
